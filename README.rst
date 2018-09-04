@@ -6,7 +6,7 @@ How To Use
 ==========
 
 If you need to use this repository as a library, add it to your repository as
-a _submodule_:
+a *submodule*:
 
 ``git submodule add https://github.com/ncasuk/amfutils.git amfutils``
 
