@@ -5,7 +5,7 @@ class AMFInstrument:
     Parent class for AMF instruments with common functions
     """
 
-    def read_amf_variables(csv_var_file):
+    def read_amf_variables(self, csv_var_file):
         """
         Reads an AMF data project CSV-format variable list into a structure.
         """
@@ -21,7 +21,7 @@ class AMFInstrument:
 
         return out
 
-    def arguments():
+    def arguments(self):
         """
         Processes command-line arguments, returns parser.
         """
