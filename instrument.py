@@ -5,6 +5,11 @@ class AMFInstrument:
     Parent class for AMF instruments with common functions
     """
 
+    def init(self, input_file, metadatafile, outfile = None):
+        #get common attributes
+        self.comattrs = self.read_amf_variables(metadatafile)
+    
+
     def read_amf_variables(self, csv_var_file):
         """
         Reads an AMF data project CSV-format variable list into a structure.
@@ -33,3 +38,17 @@ class AMFInstrument:
         parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
     
         return parser
+
+    def filename(self, variable, version):
+        """
+        creates a correctly-formed AMF filename for the output netcdf file
+        """
+        file_elements = [
+                self.instrument_name,
+                self.raw_metadata['platform_name'][0],
+                time_coverage_start,
+                variable,
+                'v' + version 
+                ]
+        self.outfile = "_".join(file_elements) + '.nc'
+
