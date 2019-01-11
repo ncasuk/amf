@@ -26,6 +26,7 @@ class AMFInstrument:
 
         return out
 
+    @classmethod
     def arguments(self):
         """
         Processes command-line arguments, returns parser.
