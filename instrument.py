@@ -4,10 +4,31 @@ class AMFInstrument:
     """
     Parent class for AMF instruments with common functions
     """
+    amf_variables_file = None
+    amfvars = {}
+    timeformat = '%Y%m%d%H%M%S'
 
-    def init(self, input_file, metadatafile, outfile = None):
+    @staticmethod
+    def arguments():
+        """
+        Processes command-line arguments, returns parser.
+        """
+        from argparse import ArgumentParser
+        parser=ArgumentParser()
+        parser.add_argument('--outfile', dest="output_file", help="NetCDF output filename")
+        parser.add_argument('--metadata', dest="metadata", help="Metadata filename", default='metadata')
+        parser.add_argument('infiles',nargs='+', help="Data files to process" )
+        parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
+    
+        return parser
+
+    def __init__(self, metadatafile, outfile = None):
         #get common attributes
-        self.comattrs = self.read_amf_variables(metadatafile)
+        self.amfvars = self.read_amf_variables(self.amf_variables_file)
+        self.raw_metadata = self.get_metadata(metadatafile)
+        if 'instrument_name' in self.raw_metadata:
+            self.instrument_name = self.raw_metadata['instrument_name'][0]
+            self.raw_metadata.pop('instrument_name')
     
 
     def read_amf_variables(self, csv_var_file):
@@ -26,19 +47,15 @@ class AMFInstrument:
 
         return out
 
-    @classmethod
-    def arguments(self):
-        """
-        Processes command-line arguments, returns parser.
-        """
-        from argparse import ArgumentParser
-        parser=ArgumentParser()
-        parser.add_argument('--outfile', dest="output_file", help="NetCDF output filename", default='sonic_2d_data.nc')
-        parser.add_argument('--metadata', dest="metadata", help="Metadata filename", default='2d-sonic-metadata')
-        parser.add_argument('infiles',nargs='+', help="Gill 2D Windsonic data files" )
-        parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
-    
-        return parser
+    def get_metadata(self, metafile = 'meta-data.csv'):
+        with open(metafile, 'rt') as meta:
+            raw_metadata = {} #empty dict
+            metaread = csv.reader(meta)
+            for row in metaread:
+                if len(row) == 2:
+                    raw_metadata[row[0]] = row[1:]
+            return raw_metadata
+
 
     def filename(self, variable, version):
         """
@@ -47,9 +64,10 @@ class AMFInstrument:
         file_elements = [
                 self.instrument_name,
                 self.raw_metadata['platform_name'][0],
-                time_coverage_start,
+                self.time_coverage_start,
                 variable,
                 'v' + version 
                 ]
         self.outfile = "_".join(file_elements) + '.nc'
+        return self.outfile
 
