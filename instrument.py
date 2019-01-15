@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 
 class AMFInstrument:
     """
@@ -46,6 +47,21 @@ class AMFInstrument:
                     out[current_var][line['Attribute']] = line['Value']
 
         return out
+
+    def amf_var_to_netcdf_var(self, varname):
+        tempvar = self.dataset.createVariable(self.amfvars[varname]['name'], self.amfvars[varname]['type'], dimensions=([x.strip() for x in self.amfvars[varname]['dimension'].split(',')]), fill_value = self.amfvars[varname]['_FillValue'])
+        tempvar.long_name = self.amfvars[varname]['long_name']
+        tempvar.units = self.amfvars[varname]['units']
+        tempvar.coordinates = self.amfvars[varname]['coordinates']
+        tempvar.cell_methods = self.amfvars[varname]['cell_methods']
+        tempvar.dimension = self.amfvars[varname]['dimension']
+        tempvar.type = self.amfvars[varname]['type']
+        if(self.amfvars[varname]['standard_name']):
+            tempvar.standard_name = self.amfvars[varname]['standard_name']
+
+        return tempvar
+
+
 
     def get_metadata(self, metafile = 'meta-data.csv'):
         with open(metafile, 'rt') as meta:
