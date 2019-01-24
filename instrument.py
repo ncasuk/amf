@@ -68,7 +68,7 @@ class AMFInstrument:
             raw_metadata = {} #empty dict
             metaread = csv.reader(meta)
             for row in metaread:
-                if len(row) == 2:
+                if len(row) == 2 and row[0] != 'Variable':
                     raw_metadata[row[0]] = row[1:]
             return raw_metadata
 
