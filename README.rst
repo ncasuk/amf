@@ -14,13 +14,12 @@ You can then import it in Python scripts by:
 
 ``import amfutils``
 
-or (e.g. a function from ``read_variables.py``):
+or (e.g. a class from ``instrument.py``):
 
-``from amfutils.read_variables import read_amf_variables``
+``from amfutils.instrument import AMFInstrument``
 
 
-``read_variables.py``
+``instrument.py``
 ---------------------
 
-Reads a CSV export from an AMF Data Project / Data Products / Product Definition Spreadsheets/<instrument> Variables tab and returns a dictionary.
-
+Generic AMF Instrument class, should be extended for use.
