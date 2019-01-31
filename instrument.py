@@ -1,5 +1,10 @@
 import csv
+import os
 import numpy as np
+import pandas as pd
+from datetime import datetime
+from netCDF4 import Dataset
+
 
 class AMFInstrument:
     """
@@ -16,14 +21,16 @@ class AMFInstrument:
         """
         from argparse import ArgumentParser
         parser=ArgumentParser()
-        parser.add_argument('--outfile', dest="output_file", help="NetCDF output filename")
         parser.add_argument('--metadata', dest="metadata", help="Metadata filename", default='metadata')
         parser.add_argument('infiles',nargs='+', help="Data files to process" )
         parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
     
         return parser
 
-    def __init__(self, metadatafile, outfile = None):
+    def __init__(self, metadatafile, output_dir = './netcdf'):
+        self.base_time = datetime(1970,1,1,0,0,0)
+        self.output_dir = output_dir
+
         #get common attributes
         self.amfvars = self.read_amf_variables(self.amf_variables_file)
         self.raw_metadata = self.get_metadata(metadatafile)
@@ -86,4 +93,52 @@ class AMFInstrument:
                 ]
         self.outfile = "_".join(file_elements) + '.nc'
         return self.outfile
+
+    def setup_dataset(self, product, version):
+        """
+        instantiates NetCDF output
+        """
+        self.dataset = Dataset(os.path.join(self.output_dir, self.filename("nox-noxy-concentration","1")), "w", format="NETCDF4_CLASSIC")
+
+        # Create the time dimension - with unlimited length
+        time_dim = self.dataset.createDimension("time", None)
+    
+        # Create the time variable
+        self.rawdata['timeoffsets'] = (self.rawdata.index - self.base_time).total_seconds()
+    
+        time_units = "seconds since " + self.base_time.strftime('%Y-%m-%d %H:%M:%S')
+        time_var = self.dataset.createVariable("time", np.float64, dimensions=("time",))
+        time_var.units = time_units
+        time_var.axis = 'T'
+        time_var.standard_name = "time"
+        time_var.long_name = "Time (%s)" % time_units
+        time_var.calendar = "standard"
+        time_var.type = "float64"
+        time_var.dimension = "time"
+        time_var[:] = self.rawdata.timeoffsets.values
+
+
+    def land_coordinates(self):
+
+        #create the location dimensions - length 1 for stationary devices
+        lat  = self.dataset.createDimension('latitude', 1)
+        lon  = self.dataset.createDimension('longitude', 1)
+    
+        #create the location variables
+        latitudes = self.dataset.createVariable('latitude', np .float32,  ('latitude',))
+        latitudes.units = 'degrees_north'
+        latitudes.standard_name = 'latitude'
+        latitudes.long_name = 'Latitude'
+    
+        longitudes = self.dataset.createVariable('longitude', np .float32,  ('longitude',))
+        longitudes.units = 'degrees_east'
+        longitudes.standard_name = 'longitude'
+        longitudes.long_name = 'Longitude'
+    
+        longitudes[:] = [self.raw_metadata['platform_longitude']]
+        latitudes[:] = [self.raw_metadata['platform_latitude']]
+    
+        #remove lat/long
+        self.raw_metadata.pop('platform_longitude',None)
+        self.raw_metadata.pop('platform_latitude',None)
 
