@@ -98,7 +98,7 @@ class AMFInstrument:
         """
         instantiates NetCDF output
         """
-        self.dataset = Dataset(os.path.join(self.output_dir, self.filename("nox-noxy-concentration","1")), "w", format="NETCDF4_CLASSIC")
+        self.dataset = Dataset(os.path.join(self.output_dir, self.filename(product, version)), "w", format="NETCDF4_CLASSIC")
 
         # Create the time dimension - with unlimited length
         time_dim = self.dataset.createDimension("time", None)
