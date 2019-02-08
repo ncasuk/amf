@@ -1,7 +1,6 @@
 import csv
 import os
 import numpy as np
-import pandas as pd
 from datetime import datetime
 from netCDF4 import Dataset
 
@@ -89,7 +88,7 @@ class AMFInstrument:
                 self.raw_metadata['platform_name'][0],
                 self.time_coverage_start,
                 variable,
-                'v' + version 
+                'v' + str(version)
                 ]
         self.outfile = "_".join(file_elements) + '.nc'
         return self.outfile
