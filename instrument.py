@@ -1,6 +1,8 @@
 import csv
 import os
+import subprocess
 import numpy as np
+
 from datetime import datetime
 from netCDF4 import Dataset
 
@@ -12,6 +14,7 @@ class AMFInstrument:
     amf_variables_file = None
     amfvars = {}
     timeformat = '%Y%m%d%H%M%S'
+    attribtimeformat = '%Y-%m-%dT%H:%M:%S'
 
     @staticmethod
     def arguments():
@@ -36,7 +39,7 @@ class AMFInstrument:
         if 'instrument_name' in self.raw_metadata:
             self.instrument_name = self.raw_metadata['instrument_name'][0]
             self.raw_metadata.pop('instrument_name')
-    
+
 
     def read_amf_variables(self, csv_var_file):
         """
@@ -93,12 +96,14 @@ class AMFInstrument:
         self.outfile = "_".join(file_elements) + '.nc'
         return self.outfile
 
-    def setup_dataset(self, product, version):
+    def add_standard_time(self):
         """
-        instantiates NetCDF output
-        """
-        self.dataset = Dataset(os.path.join(self.output_dir, self.filename(product, version)), "w", format="NETCDF4_CLASSIC")
+        Adds a standard time dimension and variable. Assumes `self.rawdata` is 
+        a Pandas Dataframe with a Timeseries as an index.
 
+        Adds time_coverage_start and time_coverage_end 
+        as Global Attributes to the netCDF dataset
+        """
         # Create the time dimension - with unlimited length
         time_dim = self.dataset.createDimension("time", None)
     
@@ -115,6 +120,26 @@ class AMFInstrument:
         time_var.type = "float64"
         time_var.dimension = "time"
         time_var[:] = self.rawdata.timeoffsets.values
+        #add global attributes
+        self.dataset.time_coverage_start = self.rawdata.index[0].strftime(self.attribtimeformat)
+        self.dataset.time_coverage_end = self.rawdata.index[-1].strftime(self.attribtimeformat)
+
+
+
+    def setup_dataset(self, product, version):
+        """
+        instantiates NetCDF output
+        """
+        self.dataset = Dataset(os.path.join(self.output_dir, self.filename(product, version)), "w", format="NETCDF4_CLASSIC")
+
+        #Processing Software attributes
+        self.dataset.processing_software_url = subprocess.check_output(["git", "remote", "-v"]).split()[1]#
+        self.dataset.processing_software_url = self.dataset.processing_software_url.replace('git@github.com:','https://github.com/') # get the git repository URL
+        self.dataset.processing_software_version = subprocess.check_output(['git','rev-parse', '--short', 'HEAD']).strip() #record the Git revision
+    
+
+
+        self.add_standard_time()
 
 
     def land_coordinates(self):
