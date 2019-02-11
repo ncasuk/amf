@@ -124,15 +124,19 @@ class AMFInstrument:
         lon  = self.dataset.createDimension('longitude', 1)
     
         #create the location variables
-        latitudes = self.dataset.createVariable('latitude', np .float32,  ('latitude',))
+        latitudes = self.dataset.createVariable('latitude', np .float32,  dimensions=('latitude',))
         latitudes.units = 'degrees_north'
         latitudes.standard_name = 'latitude'
         latitudes.long_name = 'Latitude'
+        latitudes.type = 'float32'
+        latitudes.dimension = 'latitude'
     
-        longitudes = self.dataset.createVariable('longitude', np .float32,  ('longitude',))
+        longitudes = self.dataset.createVariable('longitude', np .float32,  dimensions=('longitude',))
         longitudes.units = 'degrees_east'
         longitudes.standard_name = 'longitude'
         longitudes.long_name = 'Longitude'
+        longitudes.type = 'float32'
+        longitudes.dimension = 'longitude'
     
         longitudes[:] = [self.raw_metadata['platform_longitude']]
         latitudes[:] = [self.raw_metadata['platform_latitude']]
