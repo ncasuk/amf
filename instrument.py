@@ -82,15 +82,19 @@ class AMFInstrument:
             return raw_metadata
 
 
-    def filename(self, variable, version):
+    def filename(self, data_product, version=1):
         """
         creates a correctly-formed AMF filename for the output netcdf file
+
+        :param data_product: String of AMF Data Product name, e.g. ``surface_met``, ``o3_concentration``, etc. from the Product Definition Spreadsheets.
+        :param version: Version of the output netCDF file. Defaults to 1. Must be convertible to a string.
+
         """
         file_elements = [
                 self.instrument_name,
                 self.raw_metadata['platform_name'][0],
                 self.time_coverage_start,
-                variable,
+                data_product,
                 'v' + str(version)
                 ]
         self.outfile = "_".join(file_elements) + '.nc'
@@ -98,7 +102,7 @@ class AMFInstrument:
 
     def add_standard_time(self):
         """
-        Adds a standard time dimension and variable. Assumes `self.rawdata` is 
+        Adds a standard time dimension and variable. Assumes ``self.rawdata`` is 
         a Pandas Dataframe with a Timeseries as an index.
 
         Adds time_coverage_start and time_coverage_end 

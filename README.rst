@@ -22,4 +22,6 @@ or (e.g. a class from ``instrument.py``):
 ``instrument.py``
 ---------------------
 
-Generic AMF Instrument class, should be extended for use.
+Generic AMF Instrument class, should be extended for use. You will need at 
+least a function to load the raw data into a Pandas Dataframe attribute ``self.rawdata``
+(e.g. ``get_data``) and another to convert it to netCDF (e.g. ``netcdf``)
