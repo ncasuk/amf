@@ -23,19 +23,19 @@ class AMFInstrument:
         """
         from argparse import ArgumentParser
         parser=ArgumentParser()
-        parser.add_argument('--metadata', dest="metadata", help="Metadata filename", default='metadata')
+        parser.add_argument('--metadata', action='append', help="Metadata filename, can be specified multiple times. Processed in order so later files override earlier ones", default='metadata')
         parser.add_argument('infiles',nargs='+', help="Data files to process" )
         parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
     
         return parser
 
-    def __init__(self, metadatafile, output_dir = './netcdf'):
+    def __init__(self, metadatafiles, output_dir = './netcdf'):
         self.base_time = datetime(1970,1,1,0,0,0)
         self.output_dir = output_dir
 
         #get common attributes
         self.amfvars = self.read_amf_variables(self.amf_variables_file)
-        self.raw_metadata = self.get_metadata(metadatafile)
+        self.raw_metadata = self.get_metadata(metadatafiles)
         if 'instrument_name' in self.raw_metadata:
             self.instrument_name = self.raw_metadata['instrument_name'][0]
             self.raw_metadata.pop('instrument_name')
@@ -72,14 +72,15 @@ class AMFInstrument:
 
 
 
-    def get_metadata(self, metafile = 'meta-data.csv'):
-        with open(metafile, 'rt') as meta:
-            raw_metadata = {} #empty dict
-            metaread = csv.reader(meta)
-            for row in metaread:
-                if len(row) == 2 and row[0] != 'Variable':
-                    raw_metadata[row[0]] = row[1:]
-            return raw_metadata
+    def get_metadata(self, metafiles = ['meta-data.csv']):
+        raw_metadata = {} #empty dict
+        for metafile in metafiles:
+            with open(metafile, 'rt') as meta:
+                metaread = csv.reader(meta)
+                for row in metaread:
+                    if len(row) == 2 and row[0] != 'Variable':
+                        raw_metadata[row[0]] = row[1:]
+        return raw_metadata
 
 
     def filename(self, data_product, version=1):
@@ -141,8 +142,6 @@ class AMFInstrument:
         self.dataset.processing_software_url = self.dataset.processing_software_url.replace('git@github.com:','https://github.com/') # get the git repository URL
         self.dataset.processing_software_version = subprocess.check_output(['git','rev-parse', '--short', 'HEAD']).strip() #record the Git revision
     
-
-
         self.add_standard_time()
 
 
