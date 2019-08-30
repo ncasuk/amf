@@ -23,7 +23,7 @@ class AMFInstrument:
         """
         from argparse import ArgumentParser
         parser=ArgumentParser()
-        parser.add_argument('--metadata', action='append', help="Metadata filename, can be specified multiple times. Processed in order so later files override earlier ones", default='metadata')
+        parser.add_argument('--metadata', action='append', help="Metadata filename, can be specified multiple times. Processed in order so later files override earlier ones")
         parser.add_argument('infiles',nargs='+', help="Data files to process" )
         parser.add_argument('--outdir', help="Specify directory in which output has to be created.", default="netcdf")
     
