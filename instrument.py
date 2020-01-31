@@ -44,7 +44,9 @@ class AMFInstrument:
 
     def read_amf_variables(self, csv_var_file=None):
         """
-        Reads an AMF data project variable list into a structure.
+        Reads an AMF data project variable list into a structure. If 
+        ``csv_var_file`` is set, read that, else calculate the TSV path from 
+        the product name
         """
         out = {}
         if(csv_var_file):
