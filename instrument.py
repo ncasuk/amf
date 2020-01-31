@@ -3,9 +3,10 @@ import os
 import subprocess
 import numpy as np
 
+
 from datetime import datetime
 from netCDF4 import Dataset
-
+from urllib.request import urlopen
 
 class AMFInstrument:
     """
@@ -41,19 +42,24 @@ class AMFInstrument:
             self.raw_metadata.pop('instrument_name')
 
 
-    def read_amf_variables(self, csv_var_file):
+    def read_amf_variables(self, csv_var_file=None):
         """
-        Reads an AMF data project CSV-format variable list into a structure.
+        Reads an AMF data project variable list into a structure.
         """
         out = {}
-        with open(csv_var_file,'r') as f:
-            varfile = csv.DictReader(f)
-            for line in varfile:
-                if len(line['Variable']) >0:
-                    out[line['Variable']] = {}
-                    current_var = line['Variable']
-                else:
-                    out[current_var][line['Attribute']] = line['Value']
+        if(csv_var_file):
+            #local variable file
+            varfile = csv.DictReader(open(csv_var_file,'r'))
+        else:
+            #get it from github
+            varfile = csv.DictReader(urlopen("https://raw.githubusercontent.com/ncasuk/AMF_CVs/master/product-definitions/tsv/" + self.product + "/variables-specific.tsv"), delimiter="\t")
+                
+        for line in varfile:
+            if len(line['Variable']) >0:
+                out[line['Variable']] = {}
+                current_var = line['Variable']
+            else:
+                out[current_var][line['Attribute']] = line['Value']
 
         return out
 
