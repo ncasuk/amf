@@ -7,6 +7,7 @@ import numpy as np
 from datetime import datetime
 from netCDF4 import Dataset
 from urllib.request import urlopen
+import codecs
 
 class AMFInstrument:
     """
@@ -54,7 +55,9 @@ class AMFInstrument:
             varfile = csv.DictReader(open(csv_var_file,'r'))
         else:
             #get it from github
-            varfile = csv.DictReader(urlopen("https://raw.githubusercontent.com/ncasuk/AMF_CVs/master/product-definitions/tsv/" + self.product + "/variables-specific.tsv"), delimiter="\t")
+            varurl = "https://raw.githubusercontent.com/ncasuk/AMF_CVs/master/product-definitions/tsv/" + self.product + "/variables-specific.tsv"
+            resource = urlopen(varurl)
+            varfile = csv.DictReader(codecs.iterdecode(resource,resource.headers.get_content_charset()), delimiter="\t")
                 
         for line in varfile:
             if len(line['Variable']) >0:
